@@ -10,7 +10,7 @@ environment:
     
     CXX_STANDARD: "14"
     Python_INCLUDE_DIR: "C:\\Python37\\include"
-    Python_LIBRARY_RELEASE: "C:\\Python37"
+    Python_LIBRARY_RELEASE: "C:\\Python37\\libs\\python37.lib"
     Python_EXECUTABLE: "C:\\Python37\\python.exe"
 
     matrix:

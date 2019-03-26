@@ -5,7 +5,8 @@ include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
 conan_basic_setup()
 
 add_executable(example example.cpp)
-target_link_libraries(example ${CONAN_LIBS} $ENV{Python_LIBRARY_DIR})
+target_link_libraries(example ${CONAN_LIBS} ${Python_LIBRARY_RELEASE})
+target_compile_definitions(example PUBLIC BOOST_ALL_NO_LIB)
 
 # CTest is a testing tool that can be used to test your project.
 # enable_testing()

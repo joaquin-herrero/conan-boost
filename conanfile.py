@@ -63,9 +63,9 @@ class BoostConan(ConanFile):
 
     def build_type(self):
         if self.settings.build_type == "Release" or self.settings.build_type == "RelWithDebInfo":
-            return "release"
+            return "variant=release"
         else:
-            return "debug"
+            return "variant=debug"
 
     def linkage(self):
         if self.options.shared == True:
@@ -75,12 +75,13 @@ class BoostConan(ConanFile):
 
     def flags(self):
         flags = ""
-        c_flags = 'cflags="'
-        cxx_flags = 'cxxflags="'
+        c_flags = ""
+        cxx_flags = ""
 
-        if self.options.fPIC == True:
-            c_flags += "-fPIC "
-            cxx_flags += "-fPIC "
+        if self.settings.os != "Windows":
+            if self.options.fPIC == True:
+                c_flags += "-fPIC "
+                cxx_flags += "-fPIC "
 
         cxx_version = self.env.get("CXX_STANDARD", 14)
         if self.settings.compiler == "Visual Studio":
@@ -91,13 +92,21 @@ class BoostConan(ConanFile):
         c_flags += self.env.get("C_FLAGS", "")
         cxx_flags += self.env.get("CXX_FLAGS", "")
 
-        flags = c_flags + '" ' + cxx_flags + '"'
 
-        if self.settings.os != "Windows":
-            flags += ' linkflags="-stdlib=%s"' % self.settings.compiler.libcxx
+        c_flags = "" if c_flags == "" else 'cflags="%s"' % c_flags
+        cxx_flags = "" if cxx_flags == "" else 'cxxflags="%s"' % cxx_flags
+        flags = c_flags + ' ' + cxx_flags
 
         print(flags)
         return flags;
+
+    def platform(self):
+        if self.settings.arch == "x86_64":
+            return "address-model=64"
+        elif selg.settings.arch == "x86":
+            return "address-model=32"
+        else:
+            raise Exception("Binary does not exist for these platform")
 
     def build(self):
         if self.settings.os == "Windows":
@@ -123,7 +132,8 @@ class BoostConan(ConanFile):
 
         print("-Building...")
 
-        command = "./b2 %s stage link=%s -j %s %s" % (self.flags(), self.linkage(), tools.cpu_count(), self.build_type())
+        exe = "b2.exe" if self.settings.os == "Windows" else "./b2"
+        command = "%s %s %s --hash stage link=%s runtime-link=shared -j %s %s" % (exe, self.platform(), self.flags(), self.linkage(), tools.cpu_count(), self.build_type())
 
         print(command)
         self.run(command)

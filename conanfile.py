@@ -143,6 +143,7 @@ class BoostConan(ConanFile):
 
         self.copy("*.h", dst="include/boost", src="%s/boost" % boost_dir )
         self.copy("*.hpp", dst="include/boost", src="%s/boost" % boost_dir )
+        self.copy("*.ipp", dst="include/boost", src="%s/boost" % boost_dir )
         self.copy("*.lib", dst="lib", src="%s/stage" % boost_dir, keep_path=False)
         self.copy("*.dll", dst="bin", src="%s/stage" % boost_dir, keep_path=False)
         self.copy("*.so*", dst="lib", src="%s/stage" % boost_dir, keep_path=False)

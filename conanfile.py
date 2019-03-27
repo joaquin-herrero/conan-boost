@@ -155,3 +155,6 @@ class BoostConan(ConanFile):
 
         if self.settings.os == "Linux":
             self.cpp_info.libs += ["util", "dl", "pthread"]
+
+        if self.options.shared == True:
+            self.cpp_info.defines = ["BOOST_ALL_NO_LIB"]

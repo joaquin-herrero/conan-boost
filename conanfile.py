@@ -112,6 +112,18 @@ class BoostConan(ConanFile):
         else:
             raise Exception("Binary does not exist for these platform")
 
+    def runtime(self):
+        # On Windows
+        # /MT: b2 runtime-link=static
+        # /MD: b2 runtime-link=shared  <= The default value
+
+        if self.settings.os == "Windows":
+            runtime_flag = self.settings.compiler.runtime
+            if runtime_flag == "MT" or runtime_flag == "MTd"
+                return "static"
+        else:
+            return "shared"
+
     def build(self):
         if self.settings.os == "Windows":
             self.options.remove("fPIC")
@@ -127,7 +139,7 @@ class BoostConan(ConanFile):
         self.set_python()
 
         exe = "b2.exe" if self.settings.os == "Windows" else "./b2"
-        command = "%s %s %s --hash stage link=%s runtime-link=shared -j %s %s" % (exe, self.platform(), self.flags(), self.linkage(), tools.cpu_count(), self.build_type())
+        command = "%s %s %s --hash stage link=%s runtime-link=%s -j %s %s" % (exe, self.platform(), self.flags(), self.linkage(), self.runtime(), tools.cpu_count(), self.build_type())
         self.run(command)
         
     def package(self):

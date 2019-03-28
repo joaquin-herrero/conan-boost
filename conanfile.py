@@ -21,29 +21,21 @@ class BoostConan(ConanFile):
 
     def win_sources(self):
         zip_extension = ".zip"
-        file = self.boost_root + zip_extension
+        zip_file = self.boost_root + zip_extension
 
-        tools.download(self.url_package + zip_extension, file)
-
-        print("-Unpacking file: %s..." % file)
-        tools.unzip(file)
-
-        print("-Removing file: %s..." % file)
-        os.unlink(file)
+        tools.download(self.url_package + zip_extension, zip_file)
+        tools.unzip(zip_file)
+        os.unlink(zip_file)
 
     def unix_sources(self):
         tar_extension = ".tar.gz"
-        file = self.boost_root + tar_extension
+        zip_file = self.boost_root + tar_extension
         
-        tools.download(self.url_package + tar_extension, file)
-
-        print("-Unpacking file: %s..." % file)
-        tar = tarfile.open(file, "r:gz")
+        tools.download(self.url_package + tar_extension, zip_file)
+        tar = tarfile.open(zip_file, "r:gz")
         tar.extractall()
         tar.close()
-
-        print("-Removing file: %s..." % file)
-        os.unlink(file)
+        os.unlink(zip_file)
 
     def set_python(self):
         python_include_dir = self.env.get("Python_INCLUDE_DIR", "None")
@@ -52,7 +44,6 @@ class BoostConan(ConanFile):
 
         # Skip python configuration if variables are not set
         if python_include_dir == "None" or python_library == "None" or python_executable == "None":
-            print( "-Skipping python configuration...")
             self.skip_python = True
             return
 
@@ -111,13 +102,12 @@ class BoostConan(ConanFile):
         if self.skip_python == True:
             flags += "--without-python"
 
-        print(flags)
-        return flags;
+        return flags
 
     def platform(self):
         if self.settings.arch == "x86_64":
             return "address-model=64"
-        elif selg.settings.arch == "x86":
+        elif self.settings.arch == "x86":
             return "address-model=32"
         else:
             raise Exception("Binary does not exist for these platform")
@@ -125,30 +115,19 @@ class BoostConan(ConanFile):
     def build(self):
         if self.settings.os == "Windows":
             self.options.remove("fPIC")
-        
-        print("-Downloading sources...")
-
-        if self.settings.os == "Windows":
             self.win_sources()
         else:
             self.unix_sources()
 
         # cd into ./boost_1_69_0
         os.chdir(self.boost_root)
-        
-        print("-Configuring sources...")
-        
+
         command = "bootstrap.bat" if self.settings.os == "Windows" else "./bootstrap.sh"
         self.run(command)
-
         self.set_python()
-
-        print("-Building...")
 
         exe = "b2.exe" if self.settings.os == "Windows" else "./b2"
         command = "%s %s %s --hash stage link=%s runtime-link=shared -j %s %s" % (exe, self.platform(), self.flags(), self.linkage(), tools.cpu_count(), self.build_type())
-
-        print(command)
         self.run(command)
         
     def package(self):

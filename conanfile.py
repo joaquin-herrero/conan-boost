@@ -7,7 +7,7 @@ class BoostConan(ConanFile):
     name = "boost"
     version = "1.69"
     license = "MIT License"
-    author = "Joaquín Herrero Herrero"
+    author = "Joaquin Herrero Herrero"
     url = "https://github.com/joaquin-herrero/conan-boost"
     description = "Boost library"
     topics = ("boost", "c++")

@@ -25,6 +25,10 @@ install:
   - pip.exe install conan --upgrade
   - pip.exe install conan_package_tools
   - conan user # It creates the conan data directory
+  - conan profile new --detect default
+  - conan profile update env.Python_EXECUTABLE=%Python_EXECUTABLE% default
+  - conan profile update env.Python_INCLUDE_DIR=%Python_INCLUDE_DIR% default
+  - conan profile update env.Python_LIBRARY_RELEASE=%Python_LIBRARY_RELEASE% default
 
 test_script:
   - python build.py

@@ -12,15 +12,16 @@ class BoostConan(ConanFile):
     description = "Boost library"
     topics = ("boost", "c++")
     settings = "os", "compiler", "build_type", "arch"
-    options = {"shared": [True, False], "fPIC":[True, False], "python_executable": "ANY", "python_include_dir": "ANY", "python_library": "ANY", "python_version": [3.5, 3.7]}
-    default_options = "shared=False", "fPIC=True", "python_executable=None", "python_include_dir=None", "python_library=None", "python_version=3.5" 
+    options = {"shared": [True, False], "fPIC":[True, False], "python_version": [3.5, 3.7]}
+    default_options = "shared=False", "fPIC=True", "python_version=3.5" 
     generators = "cmake"
     url_package = "https://dl.bintray.com/boostorg/release/1.69.0/source/boost_1_69_0"
-    boost_name = "boost_1_69_0"
+    boost_root = "boost_1_69_0"
+    skip_python = False
 
     def win_sources(self):
         zip_extension = ".zip"
-        file = self.boost_name + zip_extension
+        file = self.boost_root + zip_extension
 
         tools.download(self.url_package + zip_extension, file)
 
@@ -32,7 +33,7 @@ class BoostConan(ConanFile):
 
     def unix_sources(self):
         tar_extension = ".tar.gz"
-        file = self.boost_name + tar_extension
+        file = self.boost_root + tar_extension
         
         tools.download(self.url_package + tar_extension, file)
 
@@ -45,6 +46,16 @@ class BoostConan(ConanFile):
         os.unlink(file)
 
     def set_python(self):
+        python_include_dir = self.env.get("Python_INCLUDE_DIR", "None")
+        python_library = self.env.get("Python_LIBRARY_RELEASE", "None")
+        python_executable = self.env.get("Python_EXECUTABLE", "None")
+
+        # Skip python configuration if variables are not set
+        if python_include_dir == "None" or python_library == "None" or python_executable == "None":
+            print( "-Skipping python configuration...")
+            self.skip_python = True
+            return
+
         new_config_file_name = "project-config.jam.new"
         new_config_file = open(new_config_file_name, 'w+')
         
@@ -52,7 +63,7 @@ class BoostConan(ConanFile):
         with open(old_config_file_name, 'r') as old_config_file:
             for line in old_config_file:
                 if line.lstrip().startswith("using python"):
-                    new_config_file.write("    using python : %s : %s : %s : %s ; %s" % (self.options.python_version, self.options.python_executable, self.options.python_include_dir, self.options.python_library, os.linesep))
+                    new_config_file.write("    using python : %s : %s : %s : %s ; %s" % (self.options.python_version, python_executable, python_include_dir, python_library, os.linesep))
                 else:
                     new_config_file.write(line)
 
@@ -97,6 +108,9 @@ class BoostConan(ConanFile):
         cxx_flags = "" if cxx_flags == "" else 'cxxflags="%s"' % cxx_flags
         flags = c_flags + ' ' + cxx_flags
 
+        if self.skip_python == True:
+            flags += "--without-python"
+
         print(flags)
         return flags;
 
@@ -120,15 +134,14 @@ class BoostConan(ConanFile):
             self.unix_sources()
 
         # cd into ./boost_1_69_0
-        os.chdir(self.boost_name)
+        os.chdir(self.boost_root)
         
         print("-Configuring sources...")
         
         command = "bootstrap.bat" if self.settings.os == "Windows" else "./bootstrap.sh"
         self.run(command)
 
-        if self.options.python_executable != "None":
-            self.set_python()
+        self.set_python()
 
         print("-Building...")
 
@@ -139,7 +152,7 @@ class BoostConan(ConanFile):
         self.run(command)
         
     def package(self):
-        boost_dir = "%s/%s" % (self.build_folder, self.boost_name)
+        boost_dir = "%s/%s" % (self.build_folder, self.boost_root)
 
         self.copy("*.h", dst="include/boost", src="%s/boost" % boost_dir )
         self.copy("*.hpp", dst="include/boost", src="%s/boost" % boost_dir )

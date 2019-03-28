@@ -119,7 +119,7 @@ class BoostConan(ConanFile):
 
         if self.settings.os == "Windows":
             runtime_flag = self.settings.compiler.runtime
-            if runtime_flag == "MT" or runtime_flag == "MTd"
+            if runtime_flag == "MT" or runtime_flag == "MTd":
                 return "static"
         else:
             return "shared"

@@ -17,7 +17,7 @@ class BoostConan(ConanFile):
     generators = "cmake"
     url_package = "https://dl.bintray.com/boostorg/release/1.69.0/source/boost_1_69_0"
     boost_root = "boost_1_69_0"
-    skip_python = False
+    without_python = False
 
     def win_sources(self):
         zip_extension = ".zip"
@@ -44,7 +44,7 @@ class BoostConan(ConanFile):
 
         # Skip python configuration if variables are not set
         if python_include_dir == "None" or python_library == "None" or python_executable == "None":
-            self.skip_python = True
+            self.without_python = True
             return
 
         new_config_file_name = "project-config.jam.new"
@@ -99,9 +99,6 @@ class BoostConan(ConanFile):
         cxx_flags = "" if cxx_flags == "" else 'cxxflags="%s"' % cxx_flags
         flags = c_flags + ' ' + cxx_flags
 
-        if self.skip_python == True:
-            flags += "--without-python"
-
         return flags
 
     def platform(self):
@@ -124,6 +121,13 @@ class BoostConan(ConanFile):
             
         return "shared"
 
+    def libraries(self):
+        libs = ""
+        if self.without_python == True:
+            libs += "--without-python"
+
+        return libs
+
     def build(self):
         if self.settings.os == "Windows":
             self.options.remove("fPIC")
@@ -139,7 +143,8 @@ class BoostConan(ConanFile):
         self.set_python()
 
         exe = "b2.exe" if self.settings.os == "Windows" else "./b2"
-        command = "%s %s %s --hash stage link=%s runtime-link=%s -j %s %s" % (exe, self.platform(), self.flags(), self.linkage(), self.runtime(), tools.cpu_count(), self.build_type())
+        command = "%s %s %s %s --hash stage link=%s runtime-link=%s -j %s %s" % (exe, self.platform(), self.flags(), self.libraries(), self.linkage(), self.runtime(), tools.cpu_count(), self.build_type())
+        print(command)
         self.run(command)
         
     def package(self):

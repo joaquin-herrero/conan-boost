@@ -122,7 +122,7 @@ class BoostConan(ConanFile):
         return "shared"
 
     def libraries(self):
-        libs = ""
+        libs = "--without-test"
         if self.without_python == True:
             libs += "--without-python"
 

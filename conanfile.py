@@ -165,5 +165,8 @@ class BoostConan(ConanFile):
         if self.settings.os == "Linux":
             self.cpp_info.libs += ["util", "dl", "pthread"]
 
-        if self.options.shared == True:
-            self.cpp_info.defines = ["BOOST_ALL_NO_LIB"]
+        self.cpp_info.defines = ["BOOST_ALL_NO_LIB"]
+
+        # Compiling as static still requires BOOST_PYTHON_STATIC_LIB to link with python correctly
+        if self.options.shared == False:
+            self.cpp_info.defines += ["BOOST_PYTHON_STATIC_LIB"]

@@ -13,7 +13,7 @@ class BoostConan(ConanFile):
     topics = ("boost", "c++")
     settings = "os", "compiler", "build_type", "arch"
     options = {"shared": [True, False], "fPIC":[True, False], "python_version": [3.5, 3.7]}
-    default_options = "shared=False", "fPIC=True", "python_version=3.5" 
+    default_options = "shared=False", "fPIC=True", "python_version=3.7"
     generators = "cmake"
     url_package = "https://dl.bintray.com/boostorg/release/1.69.0/source/boost_1_69_0"
     boost_root = "boost_1_69_0"
